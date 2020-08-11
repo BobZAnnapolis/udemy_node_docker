@@ -1,0 +1,111 @@
+02 : Docker Compose Basics
+==========================
+
+Tools :
+=======
+node.js - mostly in a container
+docker : engine & command line
+docker-compose
+
+on Mac
+======
+- use Docker Desktop
+
+Why Compose ?
+-------------
+2 parts
+- CLI & YAML files
+  - CLI designed around developer workflows
+- docker-compose CLI a substitute for docker CLI
+
+- CLI - NOT DESIGNED FOR PROD environments, use ORCHESTRATION utilities
+
+
+COMPOSE FILE FORMAT
+===================
+- multi-containers, networks, volumes, etc
+  - each called a service
+- written in YAML
+- specific to compose
+- can layer sets of YAML files, use templates, env vars
+
+- docker-compose.yml {default name - if u want others, need to specify on cmd line}
+
+YAML files
+==========
+- yaml ain't markup language
+- used by Docker, K8s, Amazon & others
+- easy to read
+  - : -> used for key/value pairs
+  - only spaces, no tabs
+  - '-' used for lists
+
+
+docker-compose CLI
+==================
+- many docker commands are same/similar in docker-compose
+- IDE's now support docker-compose, eg Visual Studio, Docker-Desktop
+- most default names/settings work pretty well
+
+fyi, CLI & YAML versions differ
+
+
+docker-compose up
+-----------------
+- 1 stop shop
+- builds/pulls images if missing
+- creates volumes/networks/containers/etc
+- starts container{s} in foreground
+  - use '-d' to detach/background
+- use '--build' to always build new/latest images
+  - otherwise just use up
+
+docker-compose down
+-------------------
+- 1 stop shop
+- stops & deletes networks/containers/etc
+  - leaves data alone
+- use '-v' to delete volumes
+
+docker-compose ...
+------------------
+- many commands take "service" option from YAML file
+- 'build' - just build/rebuild images
+- 'stop' - individual containers
+- 'ps' - lists "services" as well as containers, errors
+- 'push' - push images up to registry - MAKE SURE TO NAME PROPERLY
+- 'logs' - same as docker
+- 'exec' - same as docker
+
+
+2.11 - Assignment
+-----------------
+run thru simple commands using sample-02 from git project
+
+cd sample-02
+docker-compose up
+- localhost:3000 to see app
+docker-compose down
+docker-compose up -d
+docker-compose ps
+docker-compose logs
+docker-compose logs web
+docker-compose exec web sh
+- curl localhost  {fails - missing curl}
+- exit
+- add RUN apk add --update curl to DockerFile
+docker-compose up -d
+docker-compose exec web sh
+- curl localhost
+- still fails
+  - the up didn't rebuilt the image in order to install curl
+docker-compose up -d --build
+docker-compose exec web sh
+- curl localhost
+  - fails cuz we are using port 3000
+- curl localhost:3000
+- this time it works
+docker-compose down
+-clean up
+docker-compose ps
+- verify nothing running
