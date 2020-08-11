@@ -1,2 +1,153 @@
 03 : Node DockerFile Best Practices
 ===================================
+
+- NODE DockerFiles section
+
+- node base images, etc
+- least privilege, increase security
+- efficiency
+
+- USE COPY NOT ADD
+  - only use ADD if you know WHY YOU NEED to use ADD
+
+- npm/yarn install during build {normal in base image these days}
+
+- NPM - Node Package Manager
+  - npm cache clean --all
+
+- in DockerFile, use CMD, not npm
+  - npm requires another application to run
+  - npm does NOT work well as an init or PID 1 process {Linux}
+
+- WORKDIR not RUN mkdir
+  - ie, identify the working directory
+
+
+3.15 : FROM Base Image Guidelines
+---------------------------------
+- the image that all the comtainers will be built from 
+- stick to EVEN versions {EVEN - stable, ODD - experimental}
+  - LTS - long term stability
+- DON'T USE LATEST TAG - use 'latest' EVEN versions
+
+- a lot stem from Debian
+  - has more dependencies for node than other OS'
+- course uses ALPINE a lot
+- start w/Debian if migrating
+- move to Alpine later 
+  - very small base image
+
+- DON'T USE : slim 
+- DON'T USE : onbuild 
+
+
+3.16 : When to use Alpine, Debian or CentOS Images 
+--------------------------------------------------
+- Alpine is a security-focused small image 
+  - very little out of the box
+- Debian/Ubuntu are smaller now too
+
+- Cloud has a lot of space available
+- ~100MBspace savings isn't significant 
+  - based upon where it's going to be deployed productive 
+
+- Alpine has its own vulnerability issues 
+- Alpine CVE {Common Vulnerability E...} scanning fails 
+  - check blogs
+  - missing translation dbs used for security {was the case in 2019 - check today}
+
+- Debian/Ubuntu/CentOS work better w/CVE scanning 
+
+- Enterprises may require CentOS or Ubuntu/Debian 
+
+
+3.17 : Assignment : Making a CentOS Node Image 
+----------------------------------------------
+- use latest CentOS 
+- install the binaries of node 
+- go to Node official image for CentOS 
+- ENV to specify node version 
+- Useful for knowing how to make your own node, but only if you have to 
+
+- check out centos-node DockerFile folder for answer{s} 
+
+  533  cd centos-node/
+  535  cat Dockerfile 
+  536  cd answer/
+  537  lsa
+  542  docker build -t centos-node .
+  543  clear;docker build -t centos-node .
+    - edited it by changing version to 14. ...
+    - changed code check for architecture to hard-code to x64
+  547  docker ps
+  548  docker images
+  550  clear;docker build -t centos-node .
+  554  docker run centos-node node --version
+
+
+3.19 : Running Non-root Container Users
+---------------------------------------
+- least privilege Security with node user
+
+- inside the container - apps are running as 'root'
+  - root in a container DOES NOT EQUAL root in the host
+  - HOWEVER we want to reduce security risk inside the container 
+    - want to reduce risk 
+    - NODE official images have a built-in 'node' user 
+      - but it's not used by default
+- ALWAYS enable the 'node' user and run as that user
+  - do this after all packages are installed {this action needs root user access}
+
+- doing this in wrong order MAY CAUSE PERMISSION issues w/write access 
+
+- to change user from root to node 
+  - USER node {in DockerFile; cli : su - node for CentOS}
+
+- set permissions on app dir 
+  - RUN mkdir app && chown -R node:node . 
+
+- run a command as root in a container
+  - docker-compose exec -u root 
+
+
+3.20 : Working With The Node User Limits
+----------------------------------------
+- details on Least Privilege Users
+
+- swapping out root user for default 'node' user 
+  - affects permissions, file permissions, folder permissions
+    - read, write, installing packages 
+    - bind mounts might have access issues
+
+- brush up on Linux chown / chmod commands 
+
+- check out user-node folder in git repo 
+
+- in DockerFile, everything is acting as 'root' until explicitly changed
+  - "USER node" to change to 'node' user
+    - all actions after this statement will be performed as that user 
+
+- in DockerFile, make sure you create folders, change users, CHOWN based upon OS & app functionality
+  - certain things require root, others don't 
+
+- can also execute commands from docker, docker-compose CLI as '-u root' to execute a command as a different user 
+
+
+3.21 : Making Images Efficiently
+--------------------------------
+- optimizing build time Efficiently
+  - ie, smaller space & building speed
+
+- pick the proper FROM image 
+- Line order matters 
+  - docker builds execute in order 
+
+- FOR NODE 
+  - usually have multiple COPY lines 
+  - copy only the package and lock files 
+  - run npm install tohandle above packages
+  - then copy everything else, eg the app 
+
+- "RUN npm install && npm cache clean --force"
+
+- One apt-get per DockerFile
