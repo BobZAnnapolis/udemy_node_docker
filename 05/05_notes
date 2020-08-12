@@ -1,0 +1,14 @@
+Section 05 : Advanced Dockerfiles with Multi-stage and BuildKit
+===============================================================
+
+05.30 : Section Intro : Advanced Node Dockerfiles
+-------------------------------------------------
+- multi-stage builds 
+- Docker BuildKit 
+- Build a 3-stage image 
+- other shit 
+
+
+05.31 : Multi-stage Docker Builds
+---------------------------------
+- 
