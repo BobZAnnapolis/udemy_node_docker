@@ -1,0 +1,219 @@
+Section 05 : Advanced Dockerfiles with Multi-stage and BuildKit
+===============================================================
+
+05.30 : Section Intro : Advanced Node Dockerfiles
+-------------------------------------------------
+- multi-stage builds 
+- Docker BuildKit 
+- Build a 3-stage image 
+- other shit 
+
+
+05.31 : Multi-stage Docker Builds
+---------------------------------
+- new feature in 17.06
+- build multiple images from 1 file 
+- those images can FROM each other in another part of the same dockerfile 
+- COPY files between them
+- Space & security benefits
+- great for "artifact only"  
+- with a properly formatted multi-stage Dockerfile
+  - to build dev image from dev stage
+    - docker build -t myapp . 
+  - tobuild prod image from prod stage 
+    - docker build -t myapp:prod --target prod . 
+
+
+05.32 : More Multi-stage uses
+-----------------------------
+- options for flexible Dockerfiles 
+- Add a test stage that runs npm test 
+- have a CI build --target test stage before building prod 
+- Add npm install --only=development to dev stage 
+- without specifying a target in Dockerfile, build will build ALL / everything in the Dockerfile 
+- DON'T COPY code into dev stage 
+
+
+05.33 : Assignment : Building a 3-stage Dockerfile
+--------------------------------------------------
+- check out files in 05 subfolder
+- Create a Dockerfile from ./sample-multi-stage 
+- Create 3 Stages for prod, dev, & test
+- Prod has no devDependencies and runs node 
+- Dev includes devDep, runs nodemon
+- Test has devDep, runs npm test 
+- Build all 3 stages with unique tags
+- Goal : don't repeat lines
+
+
+05.34 : Assignment Answers : Building a 3-stage Dockerfile
+----------------------------------------------------------
+- 
+- clear;docker build -t multistage --target prod . && docker run multistage
+- clear;docker build -t multistage:dev --target dev . && docker run --init -p 3000:3000 multistage:dev
+- clear;docker build -t multistage:test --target test . && docker run --init -p 3000:3000 multistage:test
+
+
+05.35 : BuildKit, The NextGen Builder
+-------------------------------------
+A newer feature that has just “graduated” experimental in the Docker Engine is something called 
+BuildKit. It's a new way to build your images, and a replacement "build engine" that is now an 
+optional feature with quite a few benefits over traditional docker build commands.
+
+Because this feature is so new, and will change a lot over the next few months, I’m writing this 
+Lecture so I can easily change it as things update. I'll keep you posted of anything major in Udemy emails.
+
+For now, BuildKit doesn’t work with docker-compose, so it can’t be used in my recommended workflow 
+of “docker-compose for local development”, but that will likely change in 2019, so I encourage you 
+to take a look and consider if it’s got a feature important enough for you to break up your local 
+dev workflow into manual steps such as:
+
+Use docker build commands for the Node.js image
+
+Then use docker-compose for the rest
+
+Most of us should likely wait for doing "real work" with BuildKit until it's the default build engine and 
+works in docker-compose, but I still think it's worth a few minutes to check out.
+
+If you’d like to see the full run-through of current advantages of this new builder, check out the teams 
+DockerCon EU 2018 Session on YouTube here and for more examples of using it in the Docker Docs and on Docker Engineer Tõnis’s Medium blog post.
+
+Benefits
+--------
+Most image builds will be faster.
+
+Some re-builds will be much faster.
+
+It ignores stages in multi-stage that aren’t needed. This saves considerable time once you have many stages 
+for different uses.
+
+Mount host paths and secrets during builds, so they are never stored in images.
+
+Mount host ssh-agent so builds can use your private keys for private NPM modules without copying to images.
+
+Mount package manager caches so they can reuse package downloads between builds (apt, apk, yum, npm, yarn, etc).
+
+Future: add features to BuildKit “frontends” without needing a new version of Docker. We can now control 
+BuildKit versions in Dockerfile (optional).
+
+Limitations
+-----------
+No Windows Containers support yet (only works in Linux containers).
+
+No docker-compose support yet.
+
+No UCP (Docker Enterprise) support yet.
+
+Various registry limitations including using private or insecure registries (fixes in progress).
+
+Bugs are still being discovered and worked on at moby/buildkit.
+
+Not enabled by default (see below for how to enable it).
+
+Some features require enabling experimental mode in Docker Engine.
+
+Some features require Dockerfile commands that are not backwards-compatible.
+
+How to Enable It
+----------------
+You can set an environment variable DOCKER_BUILDKIT=1 to enable it for your current shell, and 
+update the docker engine config to enable it permanently when you're ready to go all in on BuildKit.
+
+Enable in Bash/Zsh and Toolbox's Quickstart Terminal with: export DOCKER_BUILDKIT=1
+
+Enable in PowerShell with: $env:DOCKER_BUILDKIT=1
+
+Optionally, enable permanently in Docker Desktop by updating preferences/settings "Daemon advanced" JSON 
+of { "features": { "buildkit": true } }
+
+Enable permanently in Linux hosts by updating the /etc/docker/daemon.json file 
+with { "features": { "buildkit": true } }
+
+Where to Watch for Updates
+--------------------------
+Issues/PR's to Subscribe to:
+
+Docker compose support · Issue #685 · moby/buildkit
+
+docker-compose build and docker build lead to different IDs · Issue #883 · docker/compose
+
+Support buildkit? · Issue #6440 · docker/compose
+
+Compose Release Notes:
+
+docker/compose
+
+Docker CE Release Notes:
+
+docker/docker-ce
+
+More Info
+---------
+Supercharged Docker Build with BuildKit
+
+Build Enhancements for Docker
+
+Resources for this lecture
+DockerCon Video: Supercharged Docker Build with BuildKit
+Docker Docs: Build Enhancements in 18.09
+GitHub: BuildKit needs support for docker-compose 
+
+
+05.36 : Using BuildKit to Enable SSH Keys for Private NPM Repositories
+-----------------------------------------------------------------------
+If your Node project has private git repos for node modules, it'll need a particular setup so SSH 
+can be used when building the image.
+
+The previous solution before BuildKit was:
+
+Use multi-stage builds.
+
+COPY a decrypted-private-key in to an early stage where npm install is run.
+
+COPY the node_modules from that stage to a new image that doesn't include the key.
+
+That solution worked if you're ok with having the ssh key stored in your local docker engine 
+images, but it wasn't ideal, and didn't work with encrypted ssh keys that required a passphrase.
+
+The new way is to use BuildKit with the ssh-agent feature, and is much more secure:
+
+Setup ssh-agent and your keys on the host OS like normal.
+
+Add this as the first line in your Dockerfile: # syntax = docker/dockerfile:experimental
+
+Start your Dockerfile npm install line with this: RUN --mount=type=ssh
+
+Run docker build with --ssh default as an additional option to enable the feature for that build.
+
+Remember you can't yet use this with docker-compose build, so you'd need to build your images 
+manually with docker build and then use that image name in your docker-compose.yml
+
+See an example Dockerfile in the course repo at  ./sample-buildkit-ssh
+
+Resources for this lecture
+Docker Docs: Using SSH to access private data in builds
+
+
+05.37 : Using BuildKit to Reuse NPM Cache
+-----------------------------------------
+If you ever change a Dockerfile line before the RUN npm install line, or you change your package.json 
+or lock file, Docker will need to re-run npm install on the next build. Docker, by default, won't 
+re-use package manager download caches like the NPM cache.
+
+If you have large package.json files with slow dependency installs due to large downloads, you can 
+speed up rebuilds by enabling the BuildKit caching feature on specific directories inside your 
+docker builds. I've seen this speed up re-builds by over 50% with large dependency trees.
+
+Remember you can't yet use this with docker-compose build, so you'd need to build your images manually 
+with docker build and then use that image name in your docker-compose.yml
+
+To set this up for re-using the NPM download cache:
+
+add this as the first line in your Dockerfile: # syntax = docker/dockerfile:experimental
+
+Start your Dockerfile npm install line with: RUN --mount=type=cache,target=/root/.npm/_cacache
+
+See an example Dockerfile in the course repo at ./sample-buildkit-cache
+
+Resources for this lecture
+BuildKit "frontends" Including Cache
