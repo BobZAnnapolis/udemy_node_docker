@@ -3,9 +3,33 @@ Section 7: Compose for Awesome Local Development
 
 07.45 : Section Intro : Compose for Awesome Local Development
 -------------------------------------------------------------
-- 
+- best parts of local development set-up, DOCKER-COMPOSE 
+- use compose features
+- tips & tricks 
+- assignment at end
 
 
 07.46 : Compose Project Tips
 ----------------------------
+- ./compose-tips folder
+- nice things to put in docker-compose.yaml
+
+- Do's 
+  - use docker-compose forlocal development
+  - docker-compose file VERSION line
+    - 3 : best for orchestration, swarm, k8s, etc
+    - 2 : good for everything except above
+  - use v2 format fro local dev 
+    - v2 only : depends_on, hardware_specific, error recovery, etc 
+  - Study the compose file & CLI features 
+
+- Don'ts {for local development}
+  - see bad.yaml file
+  - Unnecessary : "alias" & "container_name"
+  - Legacy: "expose" & "links"
+  - No need to set defaults  
+
+
+07.47 : Bind-Mounting Code, Optimizing for Performance
+------------------------------------------------------
 - 

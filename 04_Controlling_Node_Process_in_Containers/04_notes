@@ -90,7 +90,7 @@ Proper CMD for Healthy Shutdown in Node
 04.27 : Assignment Answers : Writing Dockerfiles 
 ------------------------------------------------
 - google 'apk tini for docker'
-- see DockerFile for deatils 
+- see DockerFile for details 
 
 
 04.28 : Assignment : Testing Graceful Shutdowns 
