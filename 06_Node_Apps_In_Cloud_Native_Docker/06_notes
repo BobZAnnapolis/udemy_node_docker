@@ -3,9 +3,106 @@ Section 6. Node Apps in Cloud Native Docker
 
 06.38 : Section Intro : Node Apps in Cloud Native Docker
 --------------------------------------------------------
-- 
+- 12 Factor Design Patterns
+- .dockerignore files
+- migrate existing Node apps into a container
 
 
 06.39 : Cloud Native App Guidelines
 -----------------------------------
+- 12 Factors
+- things to have in a Node app that'll work well in distributed / cloud environments
+- Follow 12factor.net principles 
+- Use Environment Variables for configuration
+- log to stdout / stderr 
+- Pin ALL versions, even npm
+- Graceful exit SIGTERM/INIT handling 
+- Create a .dockerignore file 
+
+
+12 Factor - Container Happiness
+-------------------------------
+- 12 Factor - website
+- Heroku wrote a highly respected guide to creating distributed apps 
+- Twelve factors to consider when developing or designing distributed apps 
+- Containers are almost always distributed apps 
+  - in a network 
+- Good News : You get many of these using Docker 
+Lets focus on a few for Node.js
+
+
+06.40 : Twelve Factor Apps - Config 
+-----------------------------------
+- 12factor.net/config 
+- environment variables 
+  - use defaults if none declared 
+  - defined in Dockerfile
+- Docker & Compose are great at this w/multiple options 
+- done at Container Start time 
+  - DOES NOT replace Secrets 
+- eg host names, remote API DNS names, etc
+- Old Apps :
+  - use CMD or ENTRPOINT script with 'envsubst' to pass env vars into conf files 
+
+
+06.41 : Twelve Factor Apps - Logs 
+---------------------------------
+- getting your app logs into the Docker Engine
+- 12factor.net/logs 
+- Apps should NOT route or transport logs to anything but stdout / stderr 
+  - use Docker to transport logs to another service/location/etc 
+- console.log() works
+- Winston/Bunyan/Morgan : Use levels to control verbosity 
+- Winston transport: "Console" 
+- Scale logging based upon location, ie dev, test, production 
+
+
+06.42 : .dockerignore file 
+--------------------------
+- Prevent bloat & unneded files
+  - .git 
+  - node_modules/ 
+  - npm_debug 
+  - docker-compose*.yml 
+- not needed but useful in image
+  - Dockerfile 
+  - README.md 
+
+
+06.43 : Assignment : Migrating Traditional Apps
+-----------------------------------------------
+- "MTA" - Migrating Traditional Apps 
+- "Traditional App" => Pre-Docker App 
+- Take a typical Node app & "migrate"
+- ./assignment-mta folder 
+- Add .dockerignore 
+- Create Dockerfile 
+- Change Winston Transport to use Console 
+- MTA Requirements
+  - See README.md for app details 
+  - Image should NOT include 'in', 'out', 'node_modules' or 'logs' folders 
+    - was used by original app
+  - Change Winston to Console 
+    - winston.transports.Console 
+  - Could use a SYMLINK in Dockerfile to change location of files 
+    - sometimes used when you can't change source code 
+  - bind-mount the 'in' and 'out' folders 
+  - Set CHARCOAL_FACTOR to 0.1 
+    - app graphics env var that controls visualization of produced images 
+- MTA Outcomes
+  - Running container with './in' and './out' bind-mounts results in new chalk images in './out' on host
+  - Changing --env CHARCOAL_FACTOR changes look og image (test with 10)
+  - No *.gif files in docker image
+  - docker logs show Winston output 
+    - docker ps -l  : shows last container that ran 
+    - docker logs #### - to see the logs that were being output to the screen 
+
+
+06.44 : Assignment Answer : Migrating Traditional Apps
+------------------------------------------------------
+- check files in 06_* folder
 - 
+- docker run -it mta bash
+- docker run -v $(pwd)/in:/app/in -v $(pwd)/out:/app/out mta
+- docker run -v $(pwd)/in:/app/in -v $(pwd)/out:/app/out --env CHARCOAL_FACTOR=10 mta
+  - use browser to look in ./out folder to see modified gifs 
