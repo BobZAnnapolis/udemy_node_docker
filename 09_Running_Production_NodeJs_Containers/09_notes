@@ -1,0 +1,42 @@
+Section 9 : Running Production Node.js Containers
+=================================================
+
+09.69 : Section Intro
+---------------------
+- 
+
+
+09.70 : Node.js Multi-Threaded Concerns
+---------------------------------------
+- see folder ./
+- 
+
+
+09.71 : Why Not Use Compose in Production ?
+-------------------------------------------
+- see folder ./
+- 
+
+
+09.72 : Node.js Containers With Proxies
+---------------------------------------
+- see folder ./
+- 
+
+
+09.73 : Container Replacement and Connection Management
+-------------------------------------------------------
+- see folder ./
+- 
+
+
+09.74 : Node.js With Container Orchestration
+--------------------------------------------
+- see folder ./
+- 
+
+
+09.75 : Node.js With Docker Swarm
+---------------------------------
+- see folder ./
+- 

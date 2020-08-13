@@ -1,0 +1,141 @@
+Section 08 : Making Container Images Ready for Production
+========================================================
+
+08.59 : Section Intro : Making Container Images Production Ready 
+----------------------------------------------------------------
+- Production Dockerfiles
+- assignment, etc
+
+
+08.60 : Avoiding devDependencies
+--------------------------------
+- see folder ./multi-stage-deps 
+- keeping unnecessary files out of Production
+- eg devDependencies, sample data, testing, local dev, etc
+  - Solution : multi-stage builds 
+- for NODE :
+  - prod : npm install --only=production 
+  - dev : npm install --only=development
+- use'npm ci' to speed up build /build servers 
+  - uses lock file 
+- Ensure NODE_ENV is set 
+
+
+08.61 : Dockerfile Comments, Arguments & Labels
+-----------------------------------------------
+- see folder ./dockerfile-labels 
+  - eg, real-world labels in action
+- Being a Good Container Citizen 
+- Document EVERY line that isn't obvious 
+- FROM stage, document why it's needed 
+- COPY / RUN = don't document 
+- Add LABELS 
+- {NODE} RUN npm config list - dumps cfg info - good for logging, eg versions, etc 
+
+- EXAMPLE DOCKERFILE LABELS 
+  - LABEL has OCI standards now 
+    - LABEL org.opencontainers.image.<key>
+    - Use ARG to add info to labels like build date or git commit
+    - Docker Hub has built-in env_vars for use with ARGs 
+
+- see Docker Hub documentation 
+
+- COMPOSE FILE DOCUMENTATION 
+  - YAML {unlike JSON} supports comments 
+  - Document objects that aren't obvious 
+    - why a volume is needed 
+    - why custom CMD is needed 
+  - Template blocks at top 
+  - Override objects and files
+
+
+08.62 : Running Tests During Image Builds
+----------------------------------------
+- see folder ./multi-stage-test 
+- use Docker Build as a simple CI Tool
+- {NODE} RUN npm test in a specific build-stage 
+  - Also good for linting 
+- ONLY run UNIT tests in build 
+- Test stage is NOT a default stage - make it special
+- Locally, run docker-compose run node npm test 
+  - ie, use docker-compose CLI commands to run the tests - don't always run them
+- 'docker build -t testnode .'  - builds everything 
+- 'docker build -t testnode --target=test .'  - just builds enough to do Stage-test section 
+  - see cache output lines
+  - see int-test line 
+
+
+08.63 : Security Scanning During Image Builds
+---------------------------------------------
+- see folder ./multi-stage-Scanning
+- adding security features to build 
+- Dockerfile has 'test-audit' stage 
+- Use test stage in multi-stage, or a new stage based on test stage 
+- Do testing 1st - once that passes, then scan 
+- Or run it once theimage is build on CLI 
+- Only report at first, no failing 
+  - most images have at least 1 CVE vuln 
+- lots of base images in Hub have sve's 
+- {NODE} Consider RUN npm audit
+- eg CLI, docker build -t auditnode --target=audit --build-arg MICROSCANNER_TOKEN=$MICROSCANNER .
+- real-world Dockerfiles will have LOTS of steps
+
+
+08.64 : CI Automated Testing & Proper Image Tags
+------------------------------------------------
+- Automate EVERYTHING 
+- CI/CD Automated Builds 
+- Have CI build images on (some) branches 
+- Push to registry ONCE build/test PASSES 
+- Lint Dockerfile and Compose/Stack files 
+  - YAML linter tools available 
+- Use docker-compose run or --exit-code-from for proper exit codes 
+  - CI solutions depend on CORRECT exit codes 
+  - also requires depends_on
+- Docker Hub can do some lightweight CI/CD 
+  - teams w/GitHub, GitBucket, others 
+  - simple CI solution 
+- Image Tagging 
+  - the 'latest' is not always the "latest"
+  - <name>:latest is only a convention 
+  - Docker Hub uses latest to be the latest 'stable' version 
+    - varies for other non-official images 
+  - Use latest for local easy access to current release
+  - Maybe do this per major branch too for convenience
+  - DON'T repeat tags on CI or servers 
+
+
+08.65 : Adding Healthchecks
+---------------------------
+- see folder ./healthchecks 
+- Always always always have HEALTHCHECK
+  - eg, web apps 
+    - at a minimum - test routes
+  - eg, non-web apps
+    - test for files exist, etc 
+- {for NODE.JS}
+  - Docker run and docker-compose : info only 
+  - Docker Swarm : Key for uptime and rolling updates 
+  - K8S : Not used, but helps in others making readiness/liveness probes
+- Dockerfile in folder gives 3 examples, won't actually build 
+
+
+08.66 : Assignment : Making Your Ultimate Node.js Dockerfile
+------------------------------------------------------------
+- see folder ./ultimate-node-dockerfile 
+- Use an existing Node.js sample, dog .vs. cat 
+- Make a production grade Dockerfile 
+- Development friendly, testing stage, security, scanning, non-root user, labels, minimal prod size 
+- Requirements in README.md 
+
+
+08.67 : Assignment Answer : Making Your Ultimate Node.js Dockerfile
+-------------------------------------------------------------------
+- see folder ./ultimate-node-dockerfile 
+- look in answer folder 
+
+
+
+08.68 : Assignment Answers BONUS : Making Your Ultimate Node.js Dockerfile
+---------------------------------------------------------------------------
+- see folder ./ultimate-node-dockerfile 
