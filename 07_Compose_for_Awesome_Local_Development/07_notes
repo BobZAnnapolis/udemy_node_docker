@@ -32,4 +32,273 @@ Section 7: Compose for Awesome Local Development
 
 07.47 : Bind-Mounting Code, Optimizing for Performance
 ------------------------------------------------------
-- 
+- check good & bad yaml files
+- ALL host paths should be relative 
+  - should always {try to} be './' or '../'
+- DON'T use host file paths 
+- DON'T bind-mount your databases
+- For local dev only : DON'T copy in code 
+- DDforWin {Windows} needs drive permissions
+- Permissions : Linux != Windows settings
+
+- Bind-Mounting : Performance
+
+
+07.48 : Node Modules in Images
+------------------------------
+- see ./sample-sails folder
+- keeping Host Dependencies out of Images
+- Problem : DON'T copy the node_modules folder from host into the target Images
+  - eg, node-gyp : is hardware_specific 
+  - Solution : use .dockerignore, include node_modules/ 
+- Dockerfile - if 'npm install ...' is followed by 'COPY . .' 
+  - could be adding a LOT of unnecessary files into image 
+
+
+07.49 : Node Modules in Bind-Mounts
+-----------------------------------
+- check ./sample-express folder 
+- Problem : we can't bind-mount node_modules content from 
+  host on macOS/Windows/etc - different architecture 
+- have to make sure Dockerfile installs needed binaries for selected os/architecture into image 
+- 2 Potential Solutions :
+  - Individual / Local :
+    - Never use npm i on host, run npm i {install} in compose 
+    - Do everything in compose 
+    - simple, but less flexible
+    - you can't 'docker-compose up' until you've used 'docker-compose run' to do 'npm install' in container
+    - node_modules on host is now ONLY usable from container 
+    - not good for production / team situation
+  - Team :
+    - Move modules in image, hide modules from host 
+    - more setup, but flexible
+    - move node_modules up a directory in Dockerfile 
+    - docker-compose mods : use empty volume to hide node_modules on bind-mount 
+    - node_modules on host doesn't conflict 
+
+
+07.50 : NPM, Yarn & Other Tools in Compose
+------------------------------------------
+- running commands and shells in Compose 
+- ./sample-strapi folder 
+- 2 ways to run various tools inside the container :
+  - docker-compose run : start a new container and run command/shell 
+  - docker-compose exec : tun additional command/shell in currently running container 
+- can run Compose run commands against individual services 
+
+
+07.51 : File Monitoring & Node Restarts
+---------------------------------------
+- see ./sample-nodemon folder 
+- use Nodemon for Compose file monitoring 
+  - other tools : webpack-dev-server, etc work the same 
+- Override Dockerfile via compose command 
+- Windows OS requires 'polling' to be enabled
+- Create a nodemon.yml for advanced workflows (bower, webpack) 
+- commands 
+  - docker-compose run express npminstall nodemon --save-dev 
+
+
+07.52 : Startup Order & Dependencies
+------------------------------------
+- see ./sample- folder 
+- Compose features for multi-service features 
+- Problem : Multi-service apps start out of order, node might exit or cycle 
+- Multi-container apps need :
+  - Dependency awareness 
+  - name resolution to other services (DNS)
+  - connecting awareness
+- Dependency Awareness 
+  - depends_on : when "up X", start Y first 
+  - Fixes name resolution issues with "Can't resolve <service name>"
+  - Only for Compose, not orchestration 
+  - compose YAML v2 : works with healthchecks like a "wait for script" 
+- Connection Failure Handling
+  - restart: on-failure 
+    - Good : helps slow db startup andNode.js failing,
+    - Better : depends_on 
+    - Bad : could spike CPU w/restart cycling 
+  - BEST Solution : Build connection timeout, buffer, and retries into your apps 
+
+
+07.53 : Healthchecks for depends_on
+-----------------------------------
+- see ./depends_on folder 
+- wait properly for dependencies 
+- depends_on : is only dependency control by default 
+  - makes sure containers are ready to be communicated with 
+    - helps out a lot w/preventing restarts 
+- ONLY works in Compose vor version 2 
+- every depends on needs an extra line 'condition: service_healthy'
+  - add 'healthcheck' line to service to ensure 'health'
+    - can be as easy/complex as needed, eg, a curl to web server, db ping/version command, etc 
+
+
+07.54 : Shrinking Compose Files & DRY YAML
+------------------------------------------
+- see ./sample- folder 
+- While not Node-specific, I thought I'd remind you of three significant features in 
+  docker-compose YAML that saves you time, prevents repetitive lines in each service 
+  (keeping it DRY), and create flexibility for large projects and teams.
+
+Environment variables
+---------------------
+Eventually, you'll need a compose file to be flexible and you'll learn that you can use 
+environment variables inside the Compose file. Note, this is not related to the YAML 
+object environment, which you want to send to the container on startup. With the 
+notation of ${VARNAME}, you can have Compose resolve these values dynamically during the 
+processing of that YAML file. The most common examples of when to use this are for 
+setting the container image tag or published port. If your docker-compose.yml file looks like this:
+
+version: '2' 
+services: 
+  ghost: 
+    image: ghost:${GHOST_VERSION}
+...then you can control the image version used from the CLI like so:
+
+GHOST_VERSION=2 docker-compose up
+
+You can also set those variables in other ways: by storing them in a .env file, by setting 
+them at the CLI with export, or even setting a default in the YAML itself with 
+${GHOST_VERSION:-2}. You can read more about variable substitution and various ways to set 
+them in the Docker docs.
+
+Templating
+----------
+A relatively new and lesser-known feature is Extension Fields, which lets you define a block 
+of text in Compose files that is reused throughout the file itself. This is mostly used when 
+you need to set the same environment objects for a bunch of microservices, and you want to 
+keep the file DRY (Don't Repeat Yourself). I recently used it to set all the same logging 
+options for each service in a Compose file like so:
+
+version: '3.4'
+ 
+x-logging: 
+  &my-logging
+    options: 
+      max-size: '1m' 
+      max-file: '5'
+ 
+services: 
+  ghost: 
+    image: ghost 
+    logging: *my-logging 
+  nginx: 
+    image: nginx 
+    logging: *my-logging 
+
+You'll notice a new section starting with an x-, which is the template, that you can 
+then name with a preceding & and call it from anywhere in your Compose file with * and 
+the name. Once you start to use microservices and have hundreds or more lines in your 
+Compose file, this will likely save you considerable time and ensure consistency of 
+options throughout. See more details in the Docker docs.
+
+
+Control your Compose Command Scope
+----------------------------------
+The docker-compose CLI controls one or more containers, volumes, networks, etc., within 
+its scope. It uses two things to create that scope: the Compose YAML config file (it 
+defaults to docker-compose.yml) and the project name (it defaults to the directory name 
+holding the YAML config file). Normally you would start a project with a single 
+docker-compose.yml file and execute commands like docker-compose up in the directory with 
+that file, but there's a lot of flexibility here as complexity grows.
+
+As things get more complex, you may have multiple YAML config files for different setups and 
+want to control which one the CLI uses, like docker-compose -f custom-compose.yml up. This 
+command ignores the default YAML file and only uses the one you specify with the -f option.
+
+You can combine many Compose files in a layered override approach. Each one listed in the CLI 
+will override the settings of the previous (processed left to right)
+—e.g., docker-compose -f docker-compose.yml -f docker-override.yml.
+
+If you manually change the project name, you can use the same Compose file in multiple scopes 
+so they don't "clash." Clashing happens when Compose tries to control a container that already 
+has another one running with the same name. You likely have noticed that containers, networks, 
+and other objects that Compose creates have a naming standard. The standard comprises three 
+parts: projectname_servicename_index. We can change the projectname, which again, defaults to 
+the directory name with a -p at the command line. So if we had a docker-compose.yml file like this:
+
+version: '2'
+services: 
+  ghost: 
+    image: ghost:${GHOST_VERSION} 
+    ports: ${GHOST_PORT}:2368 
+
+Then we had it in a directory named app1 and we started the ghost app with inline 
+environment variables like this:
+
+app1> GHOST_VERSION=2 GHOST_PORT=8080 docker-compose up
+
+We'd see a container running named this: app1_ghost_1
+
+Now, if we want to run an older version of ghost side-by-side at the same time, we 
+could do that with this same Compose file, as long as we change two things. First, 
+we need to change the project name to ensure the container name will be different 
+and not conflict with our first one. Second, we need to change the published port so 
+they don't clash with any other running containers.
+
+app1> GHOST_VERSION=1 GHOST_PORT=9090 docker-compose -p app2 up
+
+If I check running containers with a docker container ls, I see:
+
+app1_ghost_1 running ghost:2 on port 8080 
+app2_ghost_1 running ghost:1 on port 9090 
+
+Now you could pull up two browser windows and browse both 8080 and 9090 with two separate 
+ghost versions (and databases) running side by side.
+
+I hope these three features help your workflow, as they have done for many the teams 
+I've worked with in creating more complex and flexible Compose files.
+
+
+07.55 : Making Microservices Easier with Compose
+------------------------------------------------
+- see ./sample-local-proxy folder 
+- using proxies locally w/Compose 
+- Problem : many HTTP endpoints, many ports 
+  - Solution : Use a reverse-proxy
+    - NGINX/HAProxy/Traefik for host header routing + wildcard localhost domain 
+- Problem : CORS failures in dev 
+  - Solution : Proxy with * header 
+- Problem : HTTPS locally 
+  - Solution : "lets-encrypt" - better for production 
+- Local DNS for Many Endpoints 
+  - Problem : Multiple Endpoints and need a unique DNS for each 
+  - Solutions : 
+    - Chrome-only : use x.localhost, y.localhost 
+    - Use wildcard domains like *.vcap.me or xip.io 
+    - Use dnsmasq on macOS/Linux -'mini-dns-server'
+    - Manually edit hosts file 
+      - NEED admin permissions 
+      - does NOT use wildcards  {last option} 
+
+
+07.56 : VS Code, Debugging & TypeScript
+---------------------------------------
+- see ./typescript folder 
+- Getting all your code Working with Docker, Compose, etc 
+- Visual Studio, vim, etc 
+- VS Code & other editors have some Docker & Compose features built-in 
+- Debugging works when we enable in nodemon & remote via TCP 
+- Typescript compile & other pre-processors go in nodemon.json 
+
+
+07.57 : Assignment : Building a Sweet Compose File
+--------------------------------------------------
+- see ./assignment-sweet-compose folder 
+- Take all the learning from this section & apply it to a single compose file 
+- Uses Docker's example voting app (Dog .vs.Cat) 
+- step-by-step README.md 
+
+
+07.58 : Assignment Answer: Building a Sweet Compose File
+--------------------------------------------------------
+- see ./assignment-sweet-compose folder 
+- things to look for :
+  - on compose up :
+    - if cfg'd correctly, for result svc, command: nodemon --inspect=0.0.0.0:9229 server.js
+      - output will indicate debugging is on, & addtl details 
+      - if u don't see anything, cfg line was bad - ie won't report errors
+- couldn't get proxy to work on macOS 
+  - the URLs responded w/"Canot find server" :-( 
+

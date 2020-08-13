@@ -1,0 +1,51 @@
+Section 08 : Making Container Images Ready for Production
+========================================================
+
+08.59 : Section Intro : Making Container Images Production Ready 
+----------------------------------------------------------------
+- see folder ./
+
+
+08.60 : Avoiding devDependencies
+--------------------------------
+- see folder ./
+
+
+08.61 : Dockerfile Comments, Arguments & Labels
+-----------------------------------------------
+- see folder ./
+
+
+08.62 : Runing Tests During Image Builds
+----------------------------------------
+- see folder ./
+
+
+08.63 : Security Scanning During Image Builds
+---------------------------------------------
+- see folder ./
+
+
+08.64 : CI Automated Testing & Proper Image Tags
+------------------------------------------------
+- see folder ./
+
+
+08.65 : Adding Healthchecks
+---------------------------
+- see folder ./
+
+
+08.66 : Assignment : Making Your Ultimate Node.js Dockerfile
+------------------------------------------------------------
+- see folder ./
+
+
+08.67 : Assignment Answer : Making Your Ultimate Node.js Dockerfile
+-------------------------------------------------------------------
+- see folder ./
+
+
+08.68 : Assignment Answers BONUS : Making Your Ultimate Node.js Dockerfile
+---------------------------------------------------------------------------
+- see folder ./

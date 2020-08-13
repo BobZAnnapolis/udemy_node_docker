@@ -30,5 +30,3 @@ services:
       - traefik.port=2368
       - traefik.frontend.rule=Host:ghost.localhost,ghost.vcap.me
  
-
-

@@ -17,4 +17,3 @@ services:
     image: ghost
     environment:
       - VIRTUAL_HOST=ghost.localhost
-
