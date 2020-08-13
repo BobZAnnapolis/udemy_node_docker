@@ -3,40 +3,108 @@ Section 9 : Running Production Node.js Containers
 
 09.69 : Section Intro
 ---------------------
-- 
+- Running in Production 
+- Node.JS Common problems
+- HTTP Proxies 
+- When to use Compose, Swarm, Orchestration 
+- Replacing Running Apps
 
 
 09.70 : Node.js Multi-Threaded Concerns
 ---------------------------------------
-- see folder ./
-- 
+- Running Multiple Containers on Servers
+- Node is usually single threaded 
+- on most servers, will have multiple CPUs
+  - need to take advantage of this
+- Docker, by default, helps 
+- Use multiple replicas, not PM2/forever
+- Start with 1-2 replicas per CPU 
+  - scale up after being comfortable with this cfg
+- Unit Testing = single replica 
+- Integration Testing = multiple replicas
 
 
 09.71 : Why Not Use Compose in Production ?
 -------------------------------------------
-- see folder ./
-- 
+- Understanding Docker-Compose limitations 
+- docker-compose CLI is good for dev/test 
+  - NOT GOOD for PROD 
+  - use orchestration 
+- Only understands a single server /engine 
+- Doesn't understand uptime, healthchecks, etc 
+- Swarm is easy and solves most use cases
+  - can consume docker-compose.yaml file
+- Single server ? Use Swarm 
+  - if there is no hard orchestration requirement
+- K8S NOT IDEAL for 1-5 servers 
+  - Try cloud hosted {AWS, Azure, etc}
 
 
 09.72 : Node.js Containers With Proxies
 ---------------------------------------
-- see folder ./
-- 
+- How proxies change with containers  
+- reverse proxies for HTTPS 
+- Common :many HTTP containers need to listen on 80/443 
+- NGINX & HAPROXY have lots of options 
+- Traefik is the new kid, full of cool features
+  - encrypt SSL certs
+  - v2.0 - non-http protocols
+- Think early how your Node apps will communicate on a single server or cluster
+- Combi Node/Proxy per server - not a good design 
+  - usually 8-9 Node containers, 2-3 proxies, proxy feeds load balancer, routes to a Node container
+  - orchestrator handles routing, scheduling, etc 
 
 
 09.73 : Container Replacement and Connection Management
 -------------------------------------------------------
-- see folder ./
-- 
+- see folder ./sample-graceful-shutdown
+- Handling Rolling Updates & Blue-Green Deployments
+- Add SIGTERM Code to ALL Node.js apps 
+- Prevents killing app, but not graceful connection migration 
+- different styles for replacing containers 
+- don't kill immediately, need to graceful shutdown, start up, etc
+- MUST have apps available to the users 
+- {NODE} Check godaddy/terminus for easier healthcheck + shutdown 
+  - add your own app-specific shutdown code
+- check web for documentation, examples 
+
+- Container Replacement Process 
+  - Shutdown wait defaults :
+    - Docker / Swarm : 10s
+    - K8S : 30s 
+    - can change defaults in YAML 
+  - K8S / Swarm uses healthchecks differently for ingress LB 
+    - blue-greem deployments 
+    - K8S - readiness checks 
+  - Give shutdown waits longer than HTTP long polling 
+    - make sure apps coordinate communications
+  - HTTP : Use stoppable {NODE.js} to track open connections 
+    - tracks connections, when it gets signal, tells LB to restart existing connections 
 
 
 09.74 : Node.js With Container Orchestration
 --------------------------------------------
-- see folder ./
-- 
+- see folder ./sample-result-orchestration 
+- Managing Phases of Container Lifetime 
+- Multi-container, simgle image 
+- Startup "ready" state : healthchecks 
+- Multi-container client state sharing 
+  - DON'T use in-memory state 
+- Shutdown cleanup : re-connect clients, close dbs, fail readiness {k8s} 
+- Voting App, cluster-ready 
+  - k8s & swarm-ready versions
+  - Healthcheck / readiness wait for db 
+  - readiness re-checks DB connection 
+  - socket.io uses redis 
+  - stoppable for cleanup 
 
 
 09.75 : Node.js With Docker Swarm
 ---------------------------------
-- see folder ./
+- see folder ./sample-swarm 
+- Using Stack files formulti-service Apps 
+- Example of a Node.js app stack 
+- has cluster features under "deploy" 
+- replicas, update_config 
+- stop_grace_period 
 - 
