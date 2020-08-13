@@ -3,14 +3,112 @@ Section 11 : Extras
 
 11.80 Bret's DockerCon Talks on Produyction DockerCon
 -----------------------------------------------------
--
+- In 2017 I gave a talk to 5+ conferences about major decisions 
+you needed to make while designing your production Docker 
+solution. You can watch it as "Part 1" below.
+
+In 2018 I started giving a follow-up talk that goes through 
+deploying many different apps on a single Swarm, and the 
+typical setup and config this might look like for a small team 
+or solo admin in Docker CE and for a big business team in 
+Docker EE.
+
+{LINK} DockerCon Part 1: Taking Docker to Production DockerCon EU 2017
+
+{LINK} DockerCon Part 2: Building Your Swarm Production Stack DockerCon US 2018
+
+In Part 1 I talk about many of the decisions you need to make 
+when taking your Docker containers from local dev/test to a 
+production cluster. It covers decisions like:
+
+- What host OS should I use?
+- What base FROM images should I use?
+- How should my Swarm node design look?
+- What other tools besides Swarm do I need for production containers?
+- What common issues do people have when starting a production docker project?
+- How to limit the project from trying to change too much at once.
+- How to speed up the project by outsourcing small pieces of solution to existing products.
+- How Docker's Enterprise/Cloud products can help.
+
+In Part 2 I cover how to deploy multiple unrelated multi-tier 
+apps to Swarm (and do live demos). We cover using reverse 
+proxy Traefik, including Let's Encrypt certificates, REX-Ray 
+shared storage for persistent data, Prometheus monitoring, 
+ELK logging, and more. All with demos and a GitHub repo full 
+of samples.
 
 
 11.81 : Bret's DevOps and DockerCon PodCast
 -------------------------------------------
-- 
+- Never stop learning! I take clips from my weekly YouTube Live 
+DevOps Q&A and turn them into a podcast, available in most 
+major podcast players:
+
+https://www.bretfisher.com/podcast
 
 
 11.82 : Bonus 
 -------------
-- 
+- Get ALL my Content Update Notifications on Patreon for Free
+You can follow me for free on Patreon, where I update people 
+*weekly* on everything I'm creating and releasing. You can 
+become a member for a small fee, but to get all my content 
+updates you only need to follow for free.
+
+https://patreon.com/BretFisher
+
+
+Signup for My Newsletter
+I send out an email newsletter on new articles I've written, any 
+big news in the container ecosystem, and other things you 
+might find useful around containers and DevOps. You can 
+signup at: 
+
+www.bretfisher.com/newsletter
+
+Here are all my course coupons on Udemy (including this 
+one) for you to use or share. Thanks so much for supporting 
+our thousands of hours of work!
+
+
+Coupon for Docker Mastery
+If you'd like to review the content in my Docker Mastery 
+course (images, containers, compose files, docker networks, 
+registry, Swarm basics, and Kubernetes), please accept this 
+coupon to purchase Docker Mastery for at my best coupon 
+this month.
+
+https://www.udemy.com/course/docker-mastery/?couponCode=JULY20C1
+
+
+Coupon for Kubernetes Mastery
+My newest course, focusing exclusively on Kubernetes and 
+tools to help you use it. I start with Kubernetes 101 and why 
+you might need orchestration, and we go through all the major 
+features while deploying apps, breaking them, and learning 
+some basic troubleshooting. A lot more lectures are being 
+added in 2019/2020.
+
+https://www.udemy.com/course/kubernetesmastery/?couponCode=JULY20C4
+
+
+Coupon for Docker for Node.js
+If you'd like to continue learning more about Advanced Docker 
+topics that will greatly improve your Node.js development, 
+testing, and production setups, please accept this coupon to 
+purchase Docker for Node.js at my best coupon this month.
+
+https://www.udemy.com/course/docker-mastery-for-nodejs/?couponCode=JULY20C3
+
+
+Coupon for Swarm Mastery
+If you'd like to continue learning more about Docker Swarm, 
+including more production details, please accept this coupon 
+to purchase Swarm Mastery at my best coupon this month.
+
+https://www.udemy.com/course/docker-swarm-mastery/?couponCode=JULY20C2
+
+
+What's Next?
+If you'd like to see a course on something else Docker related, 
+send me a Udemy Message or Tweet @BretFisher!

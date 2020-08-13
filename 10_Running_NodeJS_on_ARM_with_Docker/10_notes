@@ -3,23 +3,68 @@ Section 10. Running Node.js on ARM with Docker
 
 10.76 : The State of ARM and Docker for Node.js
 -----------------------------------------------
-- see folder ./
-- 
+- ARM runs on Docker Desktop
+- ARM processors are used everywhere 
+- x86 chips are everywhere, ARM is NOT compatible w/x86 
+  - eg, Raspberry Pi 
+- But it's hard to develop on ARM 
+  - ideally need to be on the actualmachine to develop on it, eg SSH in 
+- April 2019 : Docker + ARM partnership 
+- Embedded Devices use ARM processors A LOT 
+- Docker Desktop runs ARM now !!!
+- Node is great on ARM 
+- Docker is the easiest way to develop & deploy on ARM processors 
 
 
 10.77 : Running Node.js ARM Containers For Development
 ------------------------------------------------------
-- see folder ./
--
+- see folder ./sample-02
+- Try How Easy Docker Makes Running ARM 
+- DOCKER-DESKTOP ONLY 
+- need images built for ARM 
+- Easy button :
+  - Change the FROM image to arm64v8/node:<tag>
+- This forces macOS/Win to run ARM 
+- Uses QEMU "processor emulation"
+- Build/run like normal 
+- Mix with x86 in compose 
+- Docker Hub 
+  - Node official image 
+  - in Supported Architecture list, choose requested arch 
+- modify Docker file to use Docker Hub arm64v8 tag 
+- build 
+- docker image inspect nm | grep Arch 
+  - will see container has arm64v8 architecture
+
 
 
 10.78 : Running Node.js ARM Containers For Production
 -----------------------------------------------------
-- see folder ./
--
+- see folder ./sample-02
+- Deploying Node.js as ARM apps 
+- AWS A1 Instances (Graviton Processors)
+  - cheaper 
+  - more RAM, better networking 
+  - ARM slower than others 
+- Test your IoY/Embedded code
+  - sensors, drones, etc 
+- Docker Hub does NOT build arm64images 
+- Or does it ?  (QEMU hack)
+- Build your own CI with QEMU 
+- Docker Engine supported on ARM 
+- Swarm just works too !!
+- on AWS 
+  - search for Ubuntu ARM 
+  - there is a Docker CE installation documentation 
 
 
-10.79 : The Future ofMulti-Arch Docker :Making ARM Easier
+10.79 : The Future of Multi-Arch Docker : Making ARM Easier
 ---------------------------------------------------------
 - see folder ./
--
+- How Docker is Making ARM Easier
+- Manifest files 
+  - allow multiple images per different architectures 
+- ARM + Docker partnership will make this easier 
+- Build multi-arch in 1 command 
+- Store multi-arch images in a single repo 
+- Easier to know which arch you're running locally 
